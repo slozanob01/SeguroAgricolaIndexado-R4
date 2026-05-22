@@ -1,0 +1,283 @@
+VARIABLES DE LA BASE DE DATOS — SEGURO AGRÍCOLA INDEXADO CAFÉ
+Cundinamarca y Risaralda, Colombia | 2000–2026 | Mensual
+Shape: 628 filas × 42 columnas
+===============================================================
+
+
+VARIABLES DE IDENTIFICACIÓN
+-----------------------------
+fecha               : Año y mes (formato YYYY-MM)
+departamento        : Cundinamarca o Risaralda
+mes                 : Número del mes (1-12)
+anio                : Año (2000-2026)
+
+
+CLIMA
+------
+precipitation       : Precipitación acumulada del mes (mm)
+                      Fuente: CHIRPS — Climate Hazards Group InfraRed
+                      Precipitation with Station data (NASA/USGS)
+                      Resolución: ~5km | Disponible desde: 1981
+                      Dataset EE: UCSB-CHG/CHIRPS/DAILY
+                      Nota: suma diaria acumulada al mes
+
+temp_aire_C         : Temperatura del aire a 2 metros de altura (°C)
+                      Fuente: ERA5-Land — European Centre for Medium-Range
+                      Weather Forecasts (ECMWF)
+                      Resolución: ~9km | Disponible desde: 1950
+                      Dataset EE: ECMWF/ERA5_LAND/MONTHLY_AGGR
+                      Fórmula: temperatura_K - 273.15
+
+humedad_relativa_pct: Humedad relativa del aire (%)
+                      Fuente: ERA5-Land (ECMWF) — calculada a partir de
+                      temperatura del aire y punto de rocío
+                      Fórmula Magnus aproximada:
+                      HR = 100 × exp(17.625×Td / (243.04+Td))
+                                / exp(17.625×T  / (243.04+T))
+                      donde T = temperatura aire (°C),
+                            Td = temperatura punto de rocío (°C)
+
+
+SUELO Y BALANCE HÍDRICO
+-------------------------
+soil                : Humedad almacenada en el suelo (mm)
+                      Fuente: TerraClimate — Universidad de Idaho
+                      Resolución: ~4km | Disponible desde: 1958
+                      Dataset EE: IDAHO_EPSCOR/TERRACLIMATE
+
+def                 : Déficit hídrico climático (mm)
+                      Agua que necesita la planta menos la disponible.
+                      Valores altos indican estrés hídrico severo.
+                      Fuente: TerraClimate — Universidad de Idaho
+
+pet                 : Evapotranspiración potencial (mm)
+                      Cuánta agua evaporaría si hubiera suficiente
+                      disponible en el suelo.
+                      Fuente: TerraClimate — Universidad de Idaho
+
+aet                 : Evapotranspiración real (mm)
+                      Cuánta agua realmente evaporó el suelo y la planta.
+                      Fuente: TerraClimate — Universidad de Idaho
+
+GDD_cafe            : Grados-día de crecimiento para café (°C-día)
+                      Acumulación térmica útil para el desarrollo del café.
+                      Fuente: Calculado a partir de TerraClimate (tmmn, tmmx)
+                      Fórmula:
+                      GDD = max(0, min(24, (Tmin + Tmax) / 2 - 10))
+                      T_base café = 10°C | T_óptima = 24°C
+                      (Tmin y Tmax originalmente en décimas de °C en
+                      TerraClimate, convertidos multiplicando × 0.1)
+
+
+VEGETACIÓN Y PRODUCTIVIDAD
+----------------------------
+NDVI                : Índice de Vegetación de Diferencia Normalizada (0–1)
+                      Mide el verdor y salud general de la vegetación.
+                      Valores altos = vegetación densa y activa.
+                      Fuente: MODIS MOD13Q1 — NASA, satélite Terra
+                      Resolución: 250m | Frecuencia: 16 días → mensual
+                      Dataset EE: MODIS/061/MOD13Q1
+                      Fórmula original: NDVI_raw × 0.0001
+
+EVI                 : Índice de Vegetación Mejorado (0–1)
+                      Versión mejorada del NDVI, más preciso en zonas
+                      de vegetación densa como cafetales bajo sombra.
+                      Fuente: MODIS MOD13Q1 — NASA
+                      Fórmula original: EVI_raw × 0.0001
+
+LST_Day_1km         : Temperatura superficial del suelo — día (°C)
+                      Medida por el satélite en infrarrojo térmico.
+                      Fuente: MODIS MOD11A2 — NASA, satélite Terra
+                      Resolución: 1km | Frecuencia: 8 días → mensual
+                      Dataset EE: MODIS/061/MOD11A2
+                      Fórmula original: LST_raw × 0.02 - 273.15
+
+LST_Night_1km       : Temperatura superficial del suelo — noche (°C)
+                      Fuente: MODIS MOD11A2 — NASA
+                      Fórmula original: LST_raw × 0.02 - 273.15
+
+Gpp                 : Productividad Primaria Bruta (kg C/m²)
+                      Mide cuánta energía solar convierte la vegetación
+                      en materia orgánica mediante fotosíntesis.
+                      Es el proxy más directo de rendimiento del cultivo.
+                      Fuente: MODIS MOD17A2HGF — NASA (versión gap-filled)
+                      Resolución: 500m | Frecuencia: 8 días → mensual
+                      Dataset EE: MODIS/061/MOD17A2HGF
+                      Disponible desde: 2000-01
+                      Fórmula original: Gpp_raw × 0.0001
+
+Lai_500m            : Índice de Área Foliar (m²/m²)
+                      Número de capas de hojas por metro cuadrado de suelo.
+                      Relacionado directamente con la capacidad productiva
+                      de la planta.
+                      Fuente: MODIS MOD15A2H — NASA
+                      Resolución: 500m | Frecuencia: 8 días → mensual
+                      Dataset EE: MODIS/061/MOD15A2H
+                      Fórmula original: LAI_raw × 0.1
+
+Fpar_500m           : Fracción de Radiación Fotosintéticamente Activa
+                      Absorbida (0–1)
+                      Proporción de radiación solar que la vegetación
+                      absorbe para fotosíntesis.
+                      Fuente: MODIS MOD15A2H — NASA
+                      Fórmula original: FPAR_raw × 0.01
+
+
+TERRENO (estático — mismo valor para todos los meses)
+-------------------------------------------------------
+elevacion_media_m   : Altitud media del departamento (metros)
+                      Cundinamarca: ~1895m | Risaralda: ~1684m
+                      Ambos en rango óptimo café colombiano (1200–1800m)
+
+elevacion_std_m     : Desviación estándar de la altitud (metros)
+                      Indica heterogeneidad del terreno.
+                      Cundinamarca: 1086m (muy variable)
+                      Risaralda: 795m (más homogéneo)
+
+pendiente_media     : Pendiente media del terreno (grados)
+                      Cundinamarca: 14.5° | Risaralda: 20.1°
+
+pendiente_std       : Desviación estándar de la pendiente (grados)
+
+aspecto_medio       : Orientación media de las laderas (grados, 0–360)
+                      Ambos departamentos ~185° (orientación sur)
+                      Normal en cordilleras colombianas norte-sur.
+
+                      Fuente: SRTM — Shuttle Radar Topography Mission
+                      (NASA, misión transbordador espacial año 2000)
+                      Resolución original: 30 metros
+                      Dataset EE: USGS/SRTMGL1_003
+
+
+ANOMALÍAS SATELITALES
+----------------------
+Las anomalías miden cuánto se desvió cada mes respecto a su promedio
+histórico del mismo mes calendario (2000–2025).
+
+Fórmula general:
+anomalia_pct = ((valor_mes - media_histórica_ese_mes)
+                / media_histórica_ese_mes) × 100
+
+Valores negativos = por debajo del promedio histórico (posible estrés)
+Valores positivos = por encima del promedio histórico
+
+NDVI_anomalia_pct         : Anomalía del NDVI (%)
+EVI_anomalia_pct          : Anomalía del EVI (%)
+Gpp_anomalia_pct          : Anomalía del GPP (%)
+Lai_500m_anomalia_pct     : Anomalía del LAI (%)
+precipitation_anomalia_pct: Anomalía de la precipitación (%)
+
+
+DATOS REALES DE PRODUCCIÓN (Agronet)
+--------------------------------------
+Disponibles para 2007–2024. NaN para años 2000–2006.
+Fuente: Agronet — Ministerio de Agricultura y Desarrollo Rural (MADR)
+        Sistema de Información del Sector Agropecuario Colombiano
+        URL: agronet.gov.co/estadisticas/agricola
+        Datos originales a nivel municipal, agregados a departamental.
+
+area_cosechada_ha   : Área cosechada de café ese año (hectáreas)
+                      Suma de todos los municipios del departamento.
+
+area_sembrada_ha    : Área sembrada de café ese año (hectáreas)
+                      Incluye área en producción y en desarrollo.
+
+produccion_t        : Producción total de café ese año (toneladas)
+                      Expresada en café verde equivalente.
+
+rendimiento_t_ha    : Rendimiento real del café (toneladas/hectárea)
+                      Fórmula: produccion_t / area_cosechada_ha
+
+rendimiento_medio_t_ha : Media histórica del rendimiento por departamento
+                         (toneladas/hectárea)
+                         Calculada sobre todos los años disponibles
+                         (2007–2024).
+
+produccion_media_t  : Media histórica de producción por departamento
+                      (toneladas)
+
+factor_mensual      : Fracción de la producción anual que corresponde
+                      a ese mes (0–1, suma = 1.0 en el año)
+                      Fuente: FNC — Ensayos sobre Economía Cafetera No. 30
+                      Patrón estacional región Centro Sur
+                      (Cundinamarca y Risaralda)
+                      Cosecha principal: oct (12%) nov (16%) dic (14%)
+                      Traviesa:         abr (7.5%) may (9%) jun (8%)
+
+produccion_mensual_t: Producción esperada ese mes específico (toneladas)
+                      Fórmula: produccion_t × factor_mensual
+
+es_mes_cosecha      : Indica si es mes de cosecha (1) o no (0)
+                      Meses de cosecha: abril, mayo, junio (traviesa)
+                                        octubre, noviembre, diciembre
+                                        (cosecha principal)
+
+
+PÉRDIDA REAL
+-------------
+perdida_real_pct    : Desviación del rendimiento real respecto a la
+                      media histórica del departamento (%)
+                      Disponible para todos los meses del año con datos
+                      Agronet (el mismo valor anual se repite en cada mes).
+                      Fórmula:
+                      perdida_real_pct = ((rendimiento_t_ha
+                                          - rendimiento_medio_t_ha)
+                                         / rendimiento_medio_t_ha) × 100
+                      Valores negativos = año de pérdida
+                      Valores positivos = año mejor que el promedio
+
+perdida_real_mensual_pct : Pérdida real asignada solo a meses de cosecha (%)
+                           Mismo valor que perdida_real_pct pero con NaN
+                           en meses fuera de cosecha.
+                           NaN cuando: mes no es de cosecha, o
+                                       año sin datos Agronet (2000–2006)
+
+
+PRECIOS HISTÓRICOS DEL CAFÉ
+-----------------------------
+Fuente: ICO — International Coffee Organization
+        Colombian Mild Arabicas indicator price
+        URL: ico.org/historical-data-on-the-global-coffee-trade
+        Serie en US cents/lb convertida a USD/tonelada
+        (× 2204.62 / 100)
+
+precio_ico_usd_ton        : Precio internacional del café colombiano
+                            (USD/tonelada, promedio anual)
+                            Referencia: mercado FOB exportación
+
+precio_productor_usd_ton  : Precio estimado al productor colombiano
+                            (USD/tonelada)
+                            Fórmula: precio_ico × 0.78
+                            El productor recibe aproximadamente el 78%
+                            del precio internacional después de costos
+                            de trilla, empaque y logística.
+                            Fuente del factor: FNC — estructura de
+                            precios al productor
+
+
+NOTAS GENERALES
+================
+Período completo:    2000-01 a 2026-02
+Frecuencia:          Mensual
+Unidades espaciales: Departamento (Cundinamarca, Risaralda)
+Total filas:         628 (2 departamentos × ~26 años × 12 meses)
+Total columnas:      42
+
+Nulos esperados:
+  - Variables satelitales: 4–6 filas (últimos meses 2025–2026
+    sin datos disponibles aún en Earth Engine)
+  - TerraClimate (soil, def, pet, aet, GDD): 28 filas
+    (últimos meses 2025 no procesados aún)
+  - Variables Agronet: 196 filas (años 2000–2006 sin datos MADR)
+  - perdida_real_mensual_pct: 412 filas (solo existe en meses
+    de cosecha con datos Agronet)
+
+Agregación temporal:
+  - Colecciones con imágenes sub-mensuales (MODIS 8–16 días,
+    ERA5 diaria) fueron agregadas a mensual usando promedio.
+  - Excepción: precipitación CHIRPS usa suma acumulada del mes.
+
+Software utilizado:
+  - Google Earth Engine Python API (extracción satelital)
+  - Python / pandas (procesamiento y cálculo de anomalías)
+  - Google Colab (entorno de ejecución)
